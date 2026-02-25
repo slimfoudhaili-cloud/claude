@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Ma prochaine commande — Horace{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1 class="h3 mb-0">
+    Ma prochaine commande
+    {% if total > 0 %}
+    <span class="badge bg-danger ms-2">{{ total }}</span>
+    {% endif %}
+  </h1>
+  {% if total > 0 %}
+  <button class="btn btn-outline-secondary btn-sm d-print-none" id="btn-copier">
+    <i class="bi bi-clipboard me-1"></i>Copier la liste
+  </button>
+  {% endif %}
+</div>
+
+{% if total == 0 %}
+<div class="alert alert-success">
+  <i class="bi bi-check-circle me-2"></i>
+  Tout est en stock ! Aucun produit à commander pour le moment.
+</div>
+{% else %}
+
+<pre id="liste-texte" class="d-none">Liste de commande Horace — {{ now }}
+{% for cat, produits in categories %}
+{{ cat | upper }}
+{% for p in produits %}  - {{ p.nom }} (stock : {{ p.stock.quantite if p.stock else 0 }})
+{% endfor %}{% endfor %}</pre>
+
+{% for cat, produits in categories %}
+<h5 class="text-uppercase text-muted small fw-bold mt-4 mb-2 border-bottom pb-1">{{ cat }}</h5>
+<ul class="list-group mb-2">
+  {% for p in produits %}
+  <li class="list-group-item d-flex justify-content-between align-items-center">
+    <div>
+      <span class="badge
+        {% if p.statut == 'rupture' %}bg-danger{% else %}bg-warning text-dark{% endif %} me-2">
+        {% if p.statut == 'rupture' %}Rupture{% else %}Alerte{% endif %}
+      </span>
+      {{ p.nom }}
+    </div>
+    <small class="text-muted">
+      stock : {{ p.stock.quantite if p.stock else 0 }}
+    </small>
+  </li>
+  {% endfor %}
+</ul>
+{% endfor %}
+
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('btn-copier')?.addEventListener('click', function () {
+  const text = document.getElementById('liste-texte').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    this.innerHTML = '<i class="bi bi-check me-1"></i>Copié !';
+    setTimeout(() => {
+      this.innerHTML = '<i class="bi bi-clipboard me-1"></i>Copier la liste';
+    }, 2000);
+  });
+});
+</script>
+{% endblock %}

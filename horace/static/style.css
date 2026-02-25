@@ -1,0 +1,31 @@
+/* Horace Inventory — custom styles */
+
+body {
+  background-color: #f8f9fa;
+}
+
+.navbar-brand {
+  letter-spacing: 0.05em;
+}
+
+/* Card border thickness by status */
+.card.border-danger  { border-width: 2px !important; }
+.card.border-warning { border-width: 2px !important; }
+.card.border-success { border-width: 2px !important; }
+
+/* Print styles for the order page */
+@media print {
+  .navbar,
+  .btn,
+  .alert,
+  #btn-copier,
+  .d-print-none {
+    display: none !important;
+  }
+  body {
+    background: white;
+  }
+  .container {
+    max-width: 100%;
+  }
+}

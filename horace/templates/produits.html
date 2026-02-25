@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% block title %}Gestion des produits — Horace{% endblock %}
+
+{% block content %}
+<h1 class="h3 mb-4">Gestion des produits</h1>
+
+<!-- Formulaire d'ajout -->
+<div class="card mb-4">
+  <div class="card-header fw-semibold">
+    <i class="bi bi-plus-circle me-1"></i>Ajouter un produit
+  </div>
+  <div class="card-body">
+    <form method="post" action="{{ url_for('admin.ajouter_produit') }}" class="row g-2 align-items-end">
+      <div class="col-12 col-md-4">
+        <label class="form-label small mb-1">Nom du produit</label>
+        <input type="text" name="nom" class="form-control" placeholder="Ex : Gel douche" required>
+      </div>
+      <div class="col-12 col-md-3">
+        <label class="form-label small mb-1">Catégorie</label>
+        <input type="text" name="categorie" class="form-control" list="cats-list"
+               placeholder="Ex : Corps" required>
+        <datalist id="cats-list">
+          {% for cat in categories_defaut %}
+          <option value="{{ cat }}">
+          {% endfor %}
+          {% for cat in categories %}
+          <option value="{{ cat }}">
+          {% endfor %}
+        </datalist>
+      </div>
+      <div class="col-6 col-md-2">
+        <label class="form-label small mb-1">Seuil d'alerte</label>
+        <input type="number" name="seuil_alerte" value="1" min="0" class="form-control">
+      </div>
+      <div class="col-6 col-md-3">
+        <button type="submit" class="btn btn-success w-100">
+          <i class="bi bi-plus-lg me-1"></i>Ajouter
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Produits actifs -->
+<h2 class="h5 mb-3">Produits suivis ({{ actifs | length }})</h2>
+{% if actifs %}
+<div class="table-responsive">
+  <table class="table table-sm table-hover align-middle">
+    <thead class="table-light">
+      <tr>
+        <th>Nom</th>
+        <th>Catégorie</th>
+        <th class="text-center">Seuil alerte</th>
+        <th class="text-center">Stock</th>
+        <th class="text-center">Statut</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in actifs %}
+      <tr>
+        <td>{{ p.nom }}</td>
+        <td><span class="badge bg-light text-dark border">{{ p.categorie }}</span></td>
+        <td class="text-center">
+          <form method="post" action="{{ url_for('admin.modifier_seuil', produit_id=p.id) }}"
+                class="d-flex justify-content-center gap-1">
+            <input type="number" name="seuil_alerte" value="{{ p.seuil_alerte }}"
+                   min="0" class="form-control form-control-sm text-center" style="width:60px">
+            <button class="btn btn-sm btn-outline-secondary" title="Enregistrer">
+              <i class="bi bi-check"></i>
+            </button>
+          </form>
+        </td>
+        <td class="text-center">{{ p.stock.quantite if p.stock else 0 }}</td>
+        <td class="text-center">
+          <span class="badge
+            {% if p.statut == 'rupture' %}bg-danger
+            {% elif p.statut == 'alerte' %}bg-warning text-dark
+            {% else %}bg-success{% endif %}">
+            {% if p.statut == 'rupture' %}Rupture
+            {% elif p.statut == 'alerte' %}Alerte
+            {% else %}OK{% endif %}
+          </span>
+        </td>
+        <td class="text-end">
+          <form method="post" action="{{ url_for('admin.archiver_produit', produit_id=p.id) }}"
+                onsubmit="return confirm('Archiver « {{ p.nom }} » ?')">
+            <button class="btn btn-sm btn-outline-danger">
+              <i class="bi bi-archive me-1"></i>Archiver
+            </button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<p class="text-muted">Aucun produit actif.</p>
+{% endif %}
+
+<!-- Produits archivés -->
+{% if archives %}
+<div class="accordion mt-4" id="archivesAccordion">
+  <div class="accordion-item">
+    <h2 class="accordion-header">
+      <button class="accordion-button collapsed" type="button"
+              data-bs-toggle="collapse" data-bs-target="#archivesPanel">
+        <i class="bi bi-archive me-2"></i>
+        Produits archivés ({{ archives | length }})
+      </button>
+    </h2>
+    <div id="archivesPanel" class="accordion-collapse collapse"
+         data-bs-parent="#archivesAccordion">
+      <div class="accordion-body p-0">
+        <table class="table table-sm mb-0">
+          <tbody>
+            {% for p in archives %}
+            <tr>
+              <td>{{ p.nom }}</td>
+              <td><span class="badge bg-light text-dark border">{{ p.categorie }}</span></td>
+              <td class="text-end">
+                <form method="post" action="{{ url_for('admin.restaurer_produit', produit_id=p.id) }}">
+                  <button class="btn btn-sm btn-outline-success">
+                    <i class="bi bi-arrow-counterclockwise me-1"></i>Restaurer
+                  </button>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}
