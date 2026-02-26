@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% block title %}{{ action_label }} un produit — Horace Inventaire{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-7 col-lg-6">
+
+    <div class="d-flex align-items-center mb-4">
+      <a href="{{ url_for('dashboard') }}" class="btn btn-sm btn-outline-secondary me-3">
+        <i class="bi bi-arrow-left"></i>
+      </a>
+      <h1 class="h4 mb-0">{{ action_label }} un produit</h1>
+    </div>
+
+    <div class="card shadow-sm">
+      <div class="card-body p-4">
+        <form method="post">
+
+          <div class="mb-3">
+            <label for="name" class="form-label fw-semibold">Nom du produit <span class="text-danger">*</span></label>
+            <input
+              type="text"
+              class="form-control"
+              id="name"
+              name="name"
+              placeholder="ex. Gel Douche Corps & Cheveux"
+              value="{{ product.name if product else '' }}"
+              required
+              autofocus
+            />
+          </div>
+
+          <div class="mb-3">
+            <label for="url" class="form-label fw-semibold">Lien Horace.com</label>
+            <input
+              type="url"
+              class="form-control"
+              id="url"
+              name="url"
+              placeholder="https://www.horace.com/products/..."
+              value="{{ product.url if product else '' }}"
+            />
+            <div class="form-text">Optionnel — pour accéder rapidement à la page du produit lors de la commande.</div>
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-6">
+              <label for="unit" class="form-label fw-semibold">Unité</label>
+              <input
+                type="text"
+                class="form-control"
+                id="unit"
+                name="unit"
+                list="unit-suggestions"
+                placeholder="flacon"
+                value="{{ product.unit if product else '' }}"
+              />
+              <datalist id="unit-suggestions">
+                {% for u in units %}
+                  <option value="{{ u }}">{{ u }}</option>
+                {% endfor %}
+              </datalist>
+            </div>
+
+            {% if not product %}
+            <div class="col-6">
+              <label for="stock" class="form-label fw-semibold">Stock actuel <span class="text-danger">*</span></label>
+              <input
+                type="number"
+                class="form-control"
+                id="stock"
+                name="stock"
+                min="0"
+                value="1"
+                required
+              />
+            </div>
+            {% endif %}
+          </div>
+
+          <div class="mb-4">
+            <label for="min_stock" class="form-label fw-semibold">Seuil d'alerte (stock minimum)</label>
+            <input
+              type="number"
+              class="form-control"
+              id="min_stock"
+              name="min_stock"
+              min="0"
+              value="{{ product.min_stock if product else 1 }}"
+              required
+            />
+            <div class="form-text">
+              Une alerte s'affiche quand le stock atteint ou descend en dessous de ce seuil.
+            </div>
+          </div>
+
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-horace px-4">
+              <i class="bi bi-check-lg"></i> {{ action_label }}
+            </button>
+            {% if product %}
+              <a href="{{ url_for('product_detail', product_id=product.id) }}" class="btn btn-outline-secondary">
+                Annuler
+              </a>
+            {% else %}
+              <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">
+                Annuler
+              </a>
+            {% endif %}
+          </div>
+
+        </form>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

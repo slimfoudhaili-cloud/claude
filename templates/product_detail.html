@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+{% block title %}{{ product.name }} — Horace Inventaire{% endblock %}
+
+{% block content %}
+
+{# ── En-tête ──────────────────────────────────────────────────────────────── #}
+<div class="d-flex align-items-start justify-content-between mb-4 flex-wrap gap-2">
+  <div class="d-flex align-items-center">
+    <a href="{{ url_for('dashboard') }}" class="btn btn-sm btn-outline-secondary me-3">
+      <i class="bi bi-arrow-left"></i>
+    </a>
+    <div>
+      <h1 class="h4 mb-0">{{ product.name }}</h1>
+      {% if product.url %}
+        <a href="{{ product.url }}" target="_blank" rel="noopener" class="small text-muted">
+          <i class="bi bi-box-arrow-up-right"></i> Voir sur Horace.com
+        </a>
+      {% endif %}
+    </div>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="{{ url_for('product_edit', product_id=product.id) }}" class="btn btn-sm btn-outline-secondary">
+      <i class="bi bi-pencil"></i> Modifier
+    </a>
+    <form method="post" action="{{ url_for('product_delete', product_id=product.id) }}"
+          onsubmit="return confirm('Supprimer définitivement « {{ product.name }} » ?');">
+      <button type="submit" class="btn btn-sm btn-outline-danger">
+        <i class="bi bi-trash"></i> Supprimer
+      </button>
+    </form>
+  </div>
+</div>
+
+{# ── Cartes de statistiques ───────────────────────────────────────────────── #}
+<div class="row g-3 mb-4">
+
+  <div class="col-sm-4">
+    <div class="card shadow-sm text-center h-100 {% if product.is_out %}border-danger{% elif product.is_low %}border-warning{% endif %}">
+      <div class="card-body">
+        <p class="section-title mb-1">Stock actuel</p>
+        <p class="display-6 fw-bold mb-0 {% if product.is_out %}text-danger{% elif product.is_low %}text-warning{% else %}text-success{% endif %}">
+          {{ product.stock }}
+        </p>
+        <p class="text-muted small mb-0">{{ product.unit }}(s) — min. {{ product.min_stock }}</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-sm-4">
+    <div class="card shadow-sm text-center h-100">
+      <div class="card-body">
+        <p class="section-title mb-1">Jours restants estimés</p>
+        {% if product.days_remaining is not none %}
+          <p class="display-6 fw-bold mb-0">~{{ product.days_remaining }}</p>
+          <p class="text-muted small mb-0">jours</p>
+        {% else %}
+          <p class="display-6 fw-bold mb-0 text-muted">—</p>
+          <p class="text-muted small mb-0">Données insuffisantes</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-sm-4">
+    <div class="card shadow-sm text-center h-100">
+      <div class="card-body">
+        <p class="section-title mb-1">Consommation moyenne</p>
+        {% if product.days_per_unit is not none %}
+          <p class="display-6 fw-bold mb-0">{{ product.days_per_unit }}</p>
+          <p class="text-muted small mb-0">jours / {{ product.unit }}</p>
+        {% else %}
+          <p class="display-6 fw-bold mb-0 text-muted">—</p>
+          <p class="text-muted small mb-0">Enregistrez des utilisations</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+</div>
+
+{# ── Actions ──────────────────────────────────────────────────────────────── #}
+<div class="row g-3 mb-4">
+
+  <div class="col-md-6">
+    <div class="card shadow-sm h-100">
+      <div class="card-body">
+        <h2 class="h6 mb-3"><i class="bi bi-dash-circle text-secondary me-1"></i>Enregistrer une utilisation</h2>
+        <form method="post" action="{{ url_for('product_consume', product_id=product.id) }}">
+          <div class="row g-2 align-items-end">
+            <div class="col-4">
+              <label for="qty-consume" class="form-label small">Quantité</label>
+              <input type="number" class="form-control form-control-sm" id="qty-consume"
+                     name="quantity" min="1" value="1" required />
+            </div>
+            <div class="col-8">
+              <label for="note-consume" class="form-label small">Note (optionnel)</label>
+              <input type="text" class="form-control form-control-sm" id="note-consume"
+                     name="note" placeholder="ex. flacon terminé" maxlength="100" />
+            </div>
+          </div>
+          <button type="submit" class="btn btn-sm btn-outline-secondary mt-3">
+            <i class="bi bi-check-lg"></i> Enregistrer
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="card shadow-sm h-100">
+      <div class="card-body">
+        <h2 class="h6 mb-3"><i class="bi bi-plus-circle text-success me-1"></i>Réapprovisionner le stock</h2>
+        <form method="post" action="{{ url_for('product_restock', product_id=product.id) }}">
+          <div class="row g-2 align-items-end">
+            <div class="col-4">
+              <label for="qty-restock" class="form-label small">Quantité achetée</label>
+              <input type="number" class="form-control form-control-sm" id="qty-restock"
+                     name="quantity" min="1" value="1" required />
+            </div>
+            <div class="col-8 d-flex align-items-end">
+              <button type="submit" class="btn btn-sm btn-success mt-3 w-100">
+                <i class="bi bi-bag-plus"></i> Ajouter au stock
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+{# ── Historique ───────────────────────────────────────────────────────────── #}
+<div class="card shadow-sm">
+  <div class="card-body">
+    <h2 class="h6 mb-3">
+      <i class="bi bi-clock-history me-1"></i>
+      Historique de consommation
+      {% if log %}
+        <span class="text-muted fw-normal">({{ log|length }} entrée{{ 's' if log|length > 1 }})</span>
+      {% endif %}
+    </h2>
+
+    {% if not log %}
+      <p class="text-muted small mb-0">Aucune consommation enregistrée pour l'instant.</p>
+    {% else %}
+      <div class="table-responsive">
+        <table class="table table-sm table-hover mb-0">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th class="text-center">Quantité</th>
+              <th>Note</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for event in log %}
+              <tr>
+                <td class="text-muted small">{{ event.date | format_date }}</td>
+                <td class="text-center">{{ event.quantity }} {{ product.unit }}</td>
+                <td class="text-muted small">{{ event.note or '—' }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+{% endblock %}

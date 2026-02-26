@@ -1,0 +1,46 @@
+<div class="col-sm-6 col-lg-4">
+  <div class="card h-100 shadow-sm {% if p.is_out %}card-out{% elif p.is_low %}card-low{% else %}card-ok{% endif %}">
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-start mb-2">
+        <a href="{{ url_for('product_detail', product_id=p.id) }}"
+           class="product-name text-decoration-none text-dark stretched-link">
+          {{ p.name }}
+        </a>
+        {% if p.is_out %}
+          <span class="badge badge-stock-out ms-2 flex-shrink-0">Rupture</span>
+        {% elif p.is_low %}
+          <span class="badge badge-stock-low ms-2 flex-shrink-0">Faible</span>
+        {% else %}
+          <span class="badge badge-stock-ok ms-2 flex-shrink-0">OK</span>
+        {% endif %}
+      </div>
+
+      <p class="mb-1 small text-muted">
+        Stock :
+        <strong class="{% if p.is_out %}text-danger{% elif p.is_low %}text-warning{% else %}text-success{% endif %}">
+          {{ p.stock }} {{ p.unit }}
+        </strong>
+        (min. {{ p.min_stock }})
+      </p>
+
+      <p class="mb-3 small text-muted">
+        {% if p.days_remaining is not none %}
+          <i class="bi bi-clock"></i> ~{{ p.days_remaining }} jours restants
+        {% else %}
+          <i class="bi bi-clock text-muted"></i> Consommation non estimée
+        {% endif %}
+      </p>
+
+      {# Bouton "Utiliser 1" — position relative pour ne pas être masqué par stretched-link #}
+      <div class="position-relative" style="z-index:1;">
+        <form method="post"
+              action="{{ url_for('product_quick_consume', product_id=p.id) }}"
+              class="d-inline">
+          <button type="submit" class="btn btn-sm btn-outline-secondary">
+            <i class="bi bi-dash-circle"></i> Utiliser 1
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

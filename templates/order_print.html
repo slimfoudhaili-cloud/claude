@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Liste de commande Horace — {{ today }}</title>
+  <style>
+    body {
+      font-family: "Helvetica Neue", Arial, sans-serif;
+      font-size: 13px;
+      color: #1a1a1a;
+      margin: 2cm;
+    }
+    h1 { font-size: 1.4rem; margin-bottom: 0.2rem; }
+    .subtitle { color: #666; font-size: 0.85rem; margin-bottom: 1.5rem; }
+    table { width: 100%; border-collapse: collapse; }
+    th {
+      background: #1a1a1a;
+      color: #fff;
+      padding: 8px 10px;
+      text-align: left;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    td { padding: 8px 10px; border-bottom: 1px solid #e9ecef; }
+    tr:last-child td { border-bottom: none; }
+    .out { color: #dc3545; font-weight: bold; }
+    .low { color: #fd7e14; font-weight: bold; }
+    .url { font-size: 0.75rem; color: #666; }
+    .empty { text-align: center; padding: 2rem; color: #666; }
+    @media print {
+      body { margin: 1cm; }
+      a { color: inherit; text-decoration: none; }
+    }
+  </style>
+</head>
+<body>
+  <h1>Liste de commande Horace</h1>
+  <p class="subtitle">Générée le {{ today }}</p>
+
+  {% if not items %}
+    <p class="empty">Aucun produit à commander.</p>
+  {% else %}
+    <table>
+      <thead>
+        <tr>
+          <th>Produit</th>
+          <th style="text-align:center;">Stock</th>
+          <th style="text-align:center;">Min.</th>
+          <th style="text-align:center;">Unité</th>
+          <th>Lien</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in items %}
+          <tr>
+            <td><strong>{{ item.name }}</strong></td>
+            <td style="text-align:center;" class="{{ 'out' if item.is_out else 'low' }}">
+              {{ 'Rupture' if item.is_out else item.stock }}
+            </td>
+            <td style="text-align:center;">{{ item.min_stock }}</td>
+            <td style="text-align:center;">{{ item.unit }}</td>
+            <td class="url">
+              {% if item.url %}
+                {{ item.url }}
+              {% else %}
+                www.horace.com
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
+
+  <script>window.print();</script>
+</body>
+</html>

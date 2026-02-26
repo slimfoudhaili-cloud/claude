@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Tableau de bord — Horace Inventaire{% endblock %}
+
+{% block content %}
+
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <h1 class="h4 mb-0">Mon stock Horace</h1>
+  {% if alert_count > 0 %}
+    <a href="{{ url_for('order_list') }}" class="btn btn-danger">
+      <i class="bi bi-cart-x-fill"></i>
+      {{ alert_count }} produit{{ 's' if alert_count > 1 }} à commander
+    </a>
+  {% endif %}
+</div>
+
+{% if not products %}
+  <div class="text-center py-5 text-muted">
+    <i class="bi bi-box-seam" style="font-size:3rem;"></i>
+    <p class="mt-3">Aucun produit suivi pour l'instant.</p>
+    <a href="{{ url_for('product_add') }}" class="btn btn-horace mt-2">
+      <i class="bi bi-plus-lg"></i> Ajouter mon premier produit
+    </a>
+  </div>
+{% else %}
+
+  {# ── Ruptures de stock ─────────────────────────────────────────────── #}
+  {% set out_products = products | selectattr('is_out') | list %}
+  {% if out_products %}
+    <p class="section-title"><i class="bi bi-exclamation-octagon-fill text-danger me-1"></i>Rupture de stock</p>
+    <div class="row g-3 mb-4">
+      {% for p in out_products %}
+        {% include "_product_card.html" %}
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  {# ── Stock faible ──────────────────────────────────────────────────── #}
+  {% set low_products = products | selectattr('is_low') | list %}
+  {% if low_products %}
+    <p class="section-title"><i class="bi bi-exclamation-triangle-fill text-warning me-1"></i>Stock faible</p>
+    <div class="row g-3 mb-4">
+      {% for p in low_products %}
+        {% include "_product_card.html" %}
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  {# ── Stock suffisant ───────────────────────────────────────────────── #}
+  {% set ok_products = products | rejectattr('is_out') | rejectattr('is_low') | list %}
+  {% if ok_products %}
+    <p class="section-title"><i class="bi bi-check-circle-fill text-success me-1"></i>Stock suffisant</p>
+    <div class="row g-3 mb-4">
+      {% for p in ok_products %}
+        {% include "_product_card.html" %}
+      {% endfor %}
+    </div>
+  {% endif %}
+
+{% endif %}
+{% endblock %}
